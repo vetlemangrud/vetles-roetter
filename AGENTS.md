@@ -18,7 +18,8 @@ Gulrot-tracker — carrot tracking application. Log when you eat a carrot, view 
 vetles-roetter/
 ├── api/
 │   ├── src/
-│   │   ├── index.ts          # Hono server entry
+│   │   ├── index.ts          # Hono server entry (Node.js)
+│   │   ├── lambda.ts         # AWS Lambda entry
 │   │   ├── routes/carrots.ts # API endpoints
 │   │   └── db/
 │   │       ├── schema.ts     # Drizzle schema (carrots table)
@@ -32,6 +33,10 @@ vetles-roetter/
 │   │   └── layouts/Layout.astro
 │   ├── astro.config.mjs
 │   └── package.json
+├── infra/                    # Terraform IaC
+│   ├── main.tf               # Lambda + API Gateway
+│   ├── variables.tf
+│   └── outputs.tf
 ├── package.json              # Root workspace
 └── pnpm-workspace.yaml
 ```
@@ -87,7 +92,19 @@ For local dev without Turso: leave TURSO_DATABASE_URL empty → uses local.db (S
 
 ## DEPLOYMENT
 
-**API (serverless):** Hono supports Cloudflare Workers, Vercel, AWS Lambda via adapters.
+**AWS (Terraform):**
+```bash
+# Build Lambda bundle
+pnpm --filter @vetles-roetter/api build:lambda
+
+# Deploy infrastructure
+cd infra
+cp terraform.tfvars.example terraform.tfvars  # Add Turso credentials
+terraform init
+terraform plan
+terraform apply
+```
+
 **API (Docker):** `docker build -t gulrot-api ./api && docker run -p 3000:3000 gulrot-api`
 **Web:** Static deploy anywhere (Netlify, Vercel, Cloudflare Pages).
 
