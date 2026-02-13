@@ -1,0 +1,212 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Vetles Røtter">
+  <h1>🥕 Vetles Røtter</h1>
+
+  <section class="add-section">
+    <button id="add-carrot" class="add-btn">Jeg spiste en gulrot!</button>
+    <p id="feedback" class="feedback"></p>
+  </section>
+
+  <section class="stats-section">
+    <h2>Statistikk</h2>
+    <div class="stats-grid">
+      <div class="stat">
+        <span class="stat-value" id="stat-today">-</span>
+        <span class="stat-label">I dag</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-week">-</span>
+        <span class="stat-label">Denne uken</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-total">-</span>
+        <span class="stat-label">Totalt</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="history-section">
+    <h2>Siste</h2>
+    <ul id="history" class="history-list"></ul>
+  </section>
+</Layout>
+
+<style>
+  .add-section {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .add-btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .add-btn:hover {
+    background: var(--orange-dark);
+  }
+
+  .add-btn:active {
+    transform: scale(0.98);
+  }
+
+  .feedback {
+    margin-top: 0.5rem;
+    color: var(--green);
+    min-height: 1.5rem;
+  }
+
+  .stats-section, .history-section {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--orange);
+    padding-bottom: 0.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .stat {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--orange);
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: #78716c;
+  }
+
+  .history-list {
+    list-style: none;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .history-list li {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e7e5e4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .history-list li:last-child {
+    border-bottom: none;
+  }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    color: #a8a29e;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+
+  .delete-btn:hover {
+    color: #ef4444;
+  }
+</style>
+
+<script>
+  const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000";
+
+  const addBtn = document.getElementById("add-carrot")!;
+  const feedback = document.getElementById("feedback")!;
+  const statToday = document.getElementById("stat-today")!;
+  const statWeek = document.getElementById("stat-week")!;
+  const statTotal = document.getElementById("stat-total")!;
+  const historyList = document.getElementById("history")!;
+
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API_URL}/api/carrots/stats`);
+      const data = await res.json();
+      statToday.textContent = data.today;
+      statWeek.textContent = data.thisWeek;
+      statTotal.textContent = data.total;
+    } catch {
+      console.error("Failed to load stats");
+    }
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${API_URL}/api/carrots?limit=10`);
+      const data = await res.json();
+      historyList.innerHTML = data
+        .map((c: { id: number; eatenAt: string }) => {
+          const date = new Date(c.eatenAt);
+          const formatted = date.toLocaleString();
+          return `<li>
+            <span>🥕 ${formatted}</span>
+            <button class="delete-btn" data-id="${c.id}">✕</button>
+          </li>`;
+        })
+        .join("");
+    } catch {
+      console.error("Failed to load history");
+    }
+  }
+
+  async function addCarrot() {
+    try {
+      await fetch(`${API_URL}/api/carrots`, { method: "POST" });
+      feedback.textContent = "Gulrot registrert!";
+      setTimeout(() => (feedback.textContent = ""), 2000);
+      loadStats();
+      loadHistory();
+    } catch {
+      feedback.textContent = "Kunne ikke registrere gulrot";
+    }
+  }
+
+  async function deleteCarrot(id: string) {
+    try {
+      await fetch(`${API_URL}/api/carrots/${id}`, { method: "DELETE" });
+      loadStats();
+      loadHistory();
+    } catch {
+      console.error("Failed to delete");
+    }
+  }
+
+  addBtn.addEventListener("click", addCarrot);
+
+  historyList.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains("delete-btn")) {
+      const id = target.dataset.id;
+      if (id) deleteCarrot(id);
+    }
+  });
+
+  loadStats();
+  loadHistory();
+</script>
