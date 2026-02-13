@@ -156,6 +156,28 @@ import Layout from "../layouts/Layout.astro";
     }
   }
 
+  function formatRelativeTime(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return "Nettopp";
+    if (diffMin < 60) return `${diffMin} min siden`;
+    if (diffHour < 24) return `${diffHour} time${diffHour > 1 ? "r" : ""} siden`;
+    if (diffDay === 1) return "I går";
+    if (diffDay < 7) return `${diffDay} dager siden`;
+    
+    return date.toLocaleDateString("no-NO", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
   async function loadHistory() {
     try {
       const res = await fetch(`${API_URL}/api/carrots?limit=10`);
@@ -163,7 +185,7 @@ import Layout from "../layouts/Layout.astro";
       historyList.innerHTML = data
         .map((c: { id: number; eatenAt: string }) => {
           const date = new Date(c.eatenAt);
-          const formatted = date.toLocaleString();
+          const formatted = formatRelativeTime(date);
           return `<li>
             <span>🥕 ${formatted}</span>
             <button class="delete-btn" data-id="${c.id}">✕</button>
