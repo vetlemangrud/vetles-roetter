@@ -10,8 +10,9 @@ import (
 )
 
 type CarrotHandler struct {
-	Repository CarrotRepository
-	HomeTemplate *template.Template
+	Repository    CarrotRepository
+	HomeTemplate  *template.Template
+	VetleTemplate *template.Template
 }
 
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
@@ -29,7 +30,39 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (h CarrotHandler) PageGet(w http.ResponseWriter, r * http.Request) {
+func (h CarrotHandler) VetleGet(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	if err := h.VetleTemplate.Execute(w, nil); err != nil {
+		log.Printf("template: %v", err)
+	}
+}
+
+func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
+
+	key := os.Getenv("CARROT_WRITE_KEY")
+	res := subtle.ConstantTimeCompare([]byte(key), []byte(r.PostFormValue("key")))
+
+	switch res {
+	case 1:
+		http.SetCookie(w, &http.Cookie{
+			Name:     "vetle_key",
+			Value:    key,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
+			MaxAge:   7 * 24 * 3600,
+		})
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	case 0:
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+}
+
+func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	carrots, err := h.Repository.findCarrots()
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)

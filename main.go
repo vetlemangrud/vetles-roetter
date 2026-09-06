@@ -13,7 +13,10 @@ import (
 )
 
 //go:embed templates/carrots.html
-var carrotsHTML string
+var homeHTML string
+
+//go:embed templates/vetle.html
+var vetleHTML string
 
 func main() {
 	godotenv.Load()
@@ -35,9 +38,13 @@ func main() {
 		panic(err)
 	}
 
-	tmpl := template.Must(template.New("carrotsHome").Parse(carrotsHTML))
-	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: tmpl}
+	homeTemplate := template.Must(template.New("hom").Parse(homeHTML))
+	vetleTemplate := template.Must(template.New("vetle").Parse(vetleHTML))
+	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: homeTemplate, VetleTemplate: vetleTemplate}
 
+	http.HandleFunc("GET /{$}", carrotHandler.HomeGet)
+	http.HandleFunc("GET /vetle", carrotHandler.VetleGet)
+	http.HandleFunc("POST /vetle", carrotHandler.VetlePost)
 	http.HandleFunc("GET /api/", carrotHandler.APIGet)
 	http.HandleFunc("POST /api/", requireAuth(carrotHandler.APIPost))
 
