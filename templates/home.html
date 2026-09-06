@@ -4,14 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Vetles Røtter</title>
+    <style>
+      * {
+        font-family: sans-serif
+      } 
+      header, main {
+        text-align: center
+      }
+      header {
+        margin-top: 100px
+      }
+      h1 {
+        font-family: serif
+      }
+    </style>
   </head>
   <body>
-    <h1>Vetles Røtter</h1>
-    <p>Vetle har spist {{.CarrotAmount}} gulrøtter</p>
-    {{if .IsVetle}}
-    <form method="post" action="/">
-      <button type="Submit">Spis gulrot</button>
-    </form>
-    {{end}}
+    <header>
+      <h1>Vetles Røtter</h1>
+    </header>
+    <main>
+      <p>Vetle har spist {{.CarrotAmount}} gulrøtter</p>
+      {{if .IsVetle}}
+        <form method="post" action="/">
+          <button type="Submit">Spis gulrot</button>
+        </form>
+      {{end}}
+    </main>
   </body>
 </html>
