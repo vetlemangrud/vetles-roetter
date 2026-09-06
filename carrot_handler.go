@@ -21,15 +21,27 @@ func keyIsCorrect(key string) bool{
 	return res == 1
 }
 
+
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if keyIsCorrect(r.Header.Get("Authorization")) {
+		if IsVetle(r) {
 			next(w, r)
 		} else {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 	}
+}
+
+func IsVetle(r *http.Request) bool {
+	// Check Auth header
+	if keyIsCorrect(r.Header.Get("Authorization")) { return true }
+
+	// Check vetle_key cookie
+	key, err := r.Cookie("vetle_key")
+	if(err == nil && keyIsCorrect(key.Value)) { return true }
+
+	return false
 }
 
 func (h CarrotHandler) VetleGet(w http.ResponseWriter, r *http.Request) {
@@ -68,22 +80,14 @@ func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	}
 	count := len(carrots)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	key, err := r.Cookie("vetle_key")
-	isVetle := err == nil && keyIsCorrect(key.Value)
 
-	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: isVetle}
+	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: IsVetle(r)}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
 }
 
 func (h CarrotHandler) HomePost(w http.ResponseWriter, r *http.Request) {
-	key, err := r.Cookie("vetle_key")
-	isVetle := err == nil && keyIsCorrect(key.Value)
-	if !isVetle {
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	} 
 	if _, err := h.Repository.addCarrot(); err != nil {
 		http.Error(w, "Failed to add carrot :(", http.StatusInternalServerError)
 		return
