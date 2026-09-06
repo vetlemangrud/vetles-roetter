@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -22,7 +23,8 @@ func createCarrotTable(db *sql.DB) {
 }
 
 func main() {
-	db, err := sql.Open("sqlite3", "file:carrotvault.sqlite")
+	err := os.Mkdir("data", 0755)
+	db, err := sql.Open("sqlite3", "file:data/carrotvault.sqlite")
 	if err != nil {
 		panic(err)
 	}
