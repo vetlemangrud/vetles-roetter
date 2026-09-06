@@ -2,12 +2,14 @@ package main
 
 import (
 	"database/sql"
+	_ "embed"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 
-	_ "modernc.org/sqlite"
 	"github.com/joho/godotenv"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -30,7 +32,11 @@ func main() {
 		panic(err)
 	}
 
-	carrotHandler := CarrotHandler{Repository: carrotRepository}
+	//go:embed templates/carrots.html
+	var carrotsHTML string
+
+	tmpl := template.Must(template.New("carrotsHome").Parse(carrotsHTML))
+	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: tmpl}
 
 	http.HandleFunc("GET /api/", carrotHandler.APIGet)
 	http.HandleFunc("POST /api/", requireAuth(carrotHandler.APIPost))

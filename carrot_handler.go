@@ -3,12 +3,15 @@ package main
 import (
 	"crypto/subtle"
 	"encoding/json"
+	"html/template"
+	"log"
 	"net/http"
 	"os"
 )
 
 type CarrotHandler struct {
 	Repository CarrotRepository
+	HomeTemplate *template.Template
 }
 
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
@@ -23,6 +26,21 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
+	}
+}
+
+func (h CarrotHandler) PageGet(w http.ResponseWriter, r * http.Request) {
+	carrots, err := h.Repository.findCarrots()
+	if err != nil {
+		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
+		return
+	}
+	count := len(carrots)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	data := struct{ CarrotAmount int }{CarrotAmount: count}
+	if err := h.HomeTemplate.Execute(w, data); err != nil {
+		log.Printf("template: %v", err)
 	}
 }
 
