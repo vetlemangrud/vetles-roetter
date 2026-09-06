@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,9 +10,15 @@ import (
 )
 
 func main() {
-	err := os.Mkdir("data", 0755)
+	if err := os.MkdirAll("data", 0755); err != nil {
+		panic(err)
+	}
+
 	db, err := sql.Open("sqlite3", "file:data/carrotvault.sqlite")
 	if err != nil {
+		panic(err)
+	}
+	if err := db.Ping(); err != nil {
 		panic(err)
 	}
 	defer db.Close()
@@ -21,9 +26,10 @@ func main() {
 	carrotRepository := CarrotRepository{DB: db}
 	carrotRepository.initDatabase()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "LetsGo")
-	})
+	carrotHandler := CarrotHandler{Repository: carrotRepository}
+
+	http.HandleFunc("GET /", carrotHandler.Get)
+	http.HandleFunc("POST /", carrotHandler.Post)
 
 	log.Println("Listening on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
