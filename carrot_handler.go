@@ -1,12 +1,29 @@
 package main
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"net/http"
+	"os"
 )
 
 type CarrotHandler struct {
 	Repository CarrotRepository
+}
+
+func requireAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		key := os.Getenv("CARROT_WRITE_KEY")
+		res := subtle.ConstantTimeCompare([]byte(key), []byte(r.Header.Get("Authorization")))
+
+		switch res {
+		case 1:
+			next(w, r)
+		case 0:
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+	}
 }
 
 func (h CarrotHandler) Get(w http.ResponseWriter, r *http.Request) {

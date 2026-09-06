@@ -6,15 +6,17 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	godotenv.Load()
 	if err := os.MkdirAll("data", 0755); err != nil {
 		panic(err)
 	}
 
-	db, err := sql.Open("sqlite3", "file:data/carrotvault.sqlite")
+	db, err := sql.Open("sqlite", "file:data/carrotvault.sqlite")
 	if err != nil {
 		panic(err)
 	}
@@ -31,7 +33,7 @@ func main() {
 	carrotHandler := CarrotHandler{Repository: carrotRepository}
 
 	http.HandleFunc("GET /", carrotHandler.Get)
-	http.HandleFunc("POST /", carrotHandler.Post)
+	http.HandleFunc("POST /", requireAuth(carrotHandler.Post))
 
 	log.Println("Listening on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
