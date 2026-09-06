@@ -24,7 +24,9 @@ func main() {
 	defer db.Close()
 
 	carrotRepository := CarrotRepository{DB: db}
-	carrotRepository.initDatabase()
+	if err := carrotRepository.initDatabase(); err != nil {
+		panic(err)
+	}
 
 	carrotHandler := CarrotHandler{Repository: carrotRepository}
 
