@@ -12,6 +12,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+//go:embed templates/carrots.html
+var carrotsHTML string
+
 func main() {
 	godotenv.Load()
 	if err := os.MkdirAll("data", 0755); err != nil {
@@ -31,9 +34,6 @@ func main() {
 	if err := carrotRepository.initDatabase(); err != nil {
 		panic(err)
 	}
-
-	//go:embed templates/carrots.html
-	var carrotsHTML string
 
 	tmpl := template.Must(template.New("carrotsHome").Parse(carrotsHTML))
 	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: tmpl}
