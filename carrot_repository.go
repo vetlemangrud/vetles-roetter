@@ -14,20 +14,17 @@ type Carrot struct {
 	EatenAt time.Time `json:eaten_at`
 }
 
-func createCarrotTable(db *sql.DB) {
+
+func (r CarrotRepository) initDatabase() {
 	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS carrots (
 			"id" INTEGER PRIMARY KEY AUTOINCREMENT,
 			"eaten_at" DATETIME DEFAULT CURRENT_TIMESTAMP
 		);`
-	_, err := db.Exec(createTableSQL)
+	_, err := r.DB.Exec(createTableSQL)
 	if err != nil {
 		panic(err)
 	}
-}
-
-func (r CarrotRepository) initDatabase() {
-	createCarrotTable(r.DB)
 }
 
 func (r CarrotRepository) findCarrots() ([]Carrot, error) {
