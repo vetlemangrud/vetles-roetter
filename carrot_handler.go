@@ -24,7 +24,7 @@ func keyIsCorrect(key string) bool{
 
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if IsVetle(r) {
+		if isVetle(r) {
 			next(w, r)
 		} else {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
@@ -33,7 +33,7 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func IsVetle(r *http.Request) bool {
+func isVetle(r *http.Request) bool {
 	// Check Auth header
 	if keyIsCorrect(r.Header.Get("Authorization")) { return true }
 
@@ -81,7 +81,7 @@ func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	count := len(carrots)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: IsVetle(r)}
+	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: isVetle(r)}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
