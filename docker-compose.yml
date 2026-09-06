@@ -1,0 +1,14 @@
+services:
+  vetle-roetter:
+    build: .
+    image: vetles-roetter:local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      CARROT_WRITE_KEY: ${CARROT_WRITE_KEY}
+    volumes:
+      - carrot-data:/app/data
+
+volumes:
+  carrot-data:

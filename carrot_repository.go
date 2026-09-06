@@ -33,7 +33,7 @@ func (r CarrotRepository) findCarrots() ([]Carrot, error) {
 	}
 	defer rows.Close()
 
-	var carrots []Carrot
+	carrots := []Carrot{}
 	for rows.Next() {
 		var c Carrot
 		if err := rows.Scan(&c.ID, &c.EatenAt); err != nil {

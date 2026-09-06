@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+data/
+*.db
+api-testing.sh
+*.md
+.gitignore
+Dockerfile
+.dockerignore
