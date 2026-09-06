@@ -10,18 +10,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func createCarrotTable(db *sql.DB) {
-	createTableSQL := `
-		CREATE TABLE IF NOT EXISTS carrots (
-			"id" INTEGER PRIMARY KEY AUTOINCREMENT,
-			"eaten_at" DATETIME DEFAULT CURRENT_TIMESTAMP
-		);`
-	_, err := db.Exec(createTableSQL);
-	if err != nil {
-		panic(err)
-	}
-}
-
 func main() {
 	err := os.Mkdir("data", 0755)
 	db, err := sql.Open("sqlite3", "file:data/carrotvault.sqlite")
@@ -30,7 +18,8 @@ func main() {
 	}
 	defer db.Close()
 
-	createCarrotTable(db)
+	carrotRepository := CarrotRepository{DB: db}
+	carrotRepository.initDatabase()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "LetsGo")
