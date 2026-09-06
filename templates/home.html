@@ -8,5 +8,10 @@
   <body>
     <h1>Vetles Røtter</h1>
     <p>Vetle har spist {{.CarrotAmount}} gulrøtter</p>
+    {{if .IsVetle}}
+    <form method="post" action="/">
+      <button type="Submit">Spis gulrot</button>
+    </form>
+    {{end}}
   </body>
 </html>

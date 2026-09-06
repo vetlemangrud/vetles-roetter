@@ -15,15 +15,17 @@ type CarrotHandler struct {
 	VetleTemplate *template.Template
 }
 
+func keyIsCorrect(key string) bool{
+	correct := os.Getenv("CARROT_WRITE_KEY")
+	res := subtle.ConstantTimeCompare([]byte(correct), []byte(key))
+	return res == 1
+}
+
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		key := os.Getenv("CARROT_WRITE_KEY")
-		res := subtle.ConstantTimeCompare([]byte(key), []byte(r.Header.Get("Authorization")))
-
-		switch res {
-		case 1:
+		if keyIsCorrect(r.Header.Get("Authorization")) {
 			next(w, r)
-		case 0:
+		} else {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -39,12 +41,8 @@ func (h CarrotHandler) VetleGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
-
-	key := os.Getenv("CARROT_WRITE_KEY")
-	res := subtle.ConstantTimeCompare([]byte(key), []byte(r.PostFormValue("key")))
-
-	switch res {
-	case 1:
+	key := r.PostFormValue("key")
+	if keyIsCorrect(key) {
 		http.SetCookie(w, &http.Cookie{
 			Name:     "vetle_key",
 			Value:    key,
@@ -55,7 +53,7 @@ func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
 			MaxAge:   7 * 24 * 3600,
 		})
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-	case 0:
+	} else {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -70,11 +68,27 @@ func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	}
 	count := len(carrots)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	key, err := r.Cookie("vetle_key")
+	isVetle := err == nil && keyIsCorrect(key.Value)
 
-	data := struct{ CarrotAmount int }{CarrotAmount: count}
+	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: isVetle}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
+}
+
+func (h CarrotHandler) HomePost(w http.ResponseWriter, r *http.Request) {
+	key, err := r.Cookie("vetle_key")
+	isVetle := err == nil && keyIsCorrect(key.Value)
+	if !isVetle {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	} 
+	if _, err := h.Repository.addCarrot(); err != nil {
+		http.Error(w, "Failed to add carrot :(", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {

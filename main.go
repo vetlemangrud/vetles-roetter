@@ -12,7 +12,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-//go:embed templates/carrots.html
+//go:embed templates/home.html
 var homeHTML string
 
 //go:embed templates/vetle.html
@@ -38,11 +38,12 @@ func main() {
 		panic(err)
 	}
 
-	homeTemplate := template.Must(template.New("hom").Parse(homeHTML))
+	homeTemplate := template.Must(template.New("home").Parse(homeHTML))
 	vetleTemplate := template.Must(template.New("vetle").Parse(vetleHTML))
 	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: homeTemplate, VetleTemplate: vetleTemplate}
 
 	http.HandleFunc("GET /{$}", carrotHandler.HomeGet)
+	http.HandleFunc("POST /{$}", carrotHandler.HomePost)
 	http.HandleFunc("GET /vetle", carrotHandler.VetleGet)
 	http.HandleFunc("POST /vetle", carrotHandler.VetlePost)
 	http.HandleFunc("GET /api/", carrotHandler.APIGet)
