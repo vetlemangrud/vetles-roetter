@@ -44,6 +44,16 @@ func (r CarrotRepository) findCarrots() ([]Carrot, error) {
 	return carrots, nil
 }
 
+func (r CarrotRepository) countCarrots() (int, error) {
+	query := `SELECT COUNT(*) FROM carrots`
+	row := r.DB.QueryRow(query)
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (r CarrotRepository) addCarrot() (Carrot, error) {
 	query := `INSERT INTO carrots DEFAULT VALUES RETURNING id, eaten_at`
 	row := r.DB.QueryRow(query)

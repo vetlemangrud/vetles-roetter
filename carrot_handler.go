@@ -73,12 +73,11 @@ func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
-	carrots, err := h.Repository.findCarrots()
+	count, err := h.Repository.countCarrots()
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
 		return
 	}
-	count := len(carrots)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: isVetle(r)}
