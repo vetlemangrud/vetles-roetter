@@ -26,7 +26,7 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func (h CarrotHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {
 	carrots, err := h.Repository.findCarrots()
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
@@ -41,7 +41,7 @@ func (h CarrotHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h CarrotHandler) Post(w http.ResponseWriter, r *http.Request) {
+func (h CarrotHandler) APIPost(w http.ResponseWriter, r *http.Request) {
 	carrot, err := h.Repository.addCarrot()
 	if err != nil {
 		http.Error(w, "Failed to post carrot :(", http.StatusInternalServerError)

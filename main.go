@@ -32,8 +32,8 @@ func main() {
 
 	carrotHandler := CarrotHandler{Repository: carrotRepository}
 
-	http.HandleFunc("GET /api/", carrotHandler.Get)
-	http.HandleFunc("POST /api/", requireAuth(carrotHandler.Post))
+	http.HandleFunc("GET /api/", carrotHandler.APIGet)
+	http.HandleFunc("POST /api/", requireAuth(carrotHandler.APIPost))
 
 	log.Println("Listening on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
