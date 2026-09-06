@@ -1,5 +1,5 @@
 services:
-  vetle-roetter:
+  vetles-roetter:
     build: .
     image: vetles-roetter:local
     restart: unless-stopped
