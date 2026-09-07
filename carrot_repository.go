@@ -25,11 +25,20 @@ func (r CarrotRepository) initDatabase() error {
 	return err
 }
 
-func (r CarrotRepository) findCarrots(page int, pageSize int) ([]Carrot, error) {
+func (r CarrotRepository) findCarrots(page int, pageSize int, from time.Time, to time.Time) ([]Carrot, error) {
 	limit := pageSize
 	offset := page * pageSize
-	query := `SELECT id, eaten_at FROM carrots ORDER BY id DESC LIMIT ? OFFSET ?`
-	rows, err := r.DB.Query(query, limit, offset)
+	query := `
+		SELECT id, eaten_at 
+		FROM carrots 
+		WHERE eaten_at >= ?
+		AND eaten_at <= ?
+		ORDER BY id 
+		DESC 
+		LIMIT ? 
+		OFFSET ?
+	`
+	rows, err := r.DB.Query(query, from, to, limit, offset)
 	if err != nil {
 		return nil, err
 	}

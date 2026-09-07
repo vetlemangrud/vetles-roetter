@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 type CarrotHandler struct {
@@ -105,11 +106,26 @@ func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {page = 0}
 	if page < 0 {page = 0}
+
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
 	if err != nil {pageSize = 25}
 	if pageSize < 1 || pageSize > 200 {pageSize = 25}
 
-	carrots, err := h.Repository.findCarrots(page, pageSize)
+	from := time.Time{}
+	if s := r.URL.Query().Get("from"); s != "" {
+		if t, err := time.Parse(time.RFC3339, s); err != nil {
+			from = t
+		}
+	}
+
+	to := time.Now()
+	if s := r.URL.Query().Get("to"); s != "" {
+		if t, err := time.Parse(time.RFC3339, s); err != nil {
+			from = t
+		}
+	}
+
+	carrots, err := h.Repository.findCarrots(page, pageSize, from, to)
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
 		return
