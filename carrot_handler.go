@@ -107,7 +107,7 @@ func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {
 	if page < 0 {page = 0}
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
 	if err != nil {pageSize = 25}
-	if (pageSize < 1 || pageSize > 200) {pageSize = 200}
+	if pageSize < 1 || pageSize > 200 {pageSize = 25}
 
 	carrots, err := h.Repository.findCarrots(page, pageSize)
 	if err != nil {
