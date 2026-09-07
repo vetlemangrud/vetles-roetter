@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type CarrotHandler struct {
@@ -15,12 +16,11 @@ type CarrotHandler struct {
 	VetleTemplate *template.Template
 }
 
-func keyIsCorrect(key string) bool{
+func keyIsCorrect(key string) bool {
 	correct := os.Getenv("CARROT_WRITE_KEY")
 	res := subtle.ConstantTimeCompare([]byte(correct), []byte(key))
 	return res == 1
 }
-
 
 func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +35,15 @@ func requireAuth(next http.HandlerFunc) http.HandlerFunc {
 
 func isVetle(r *http.Request) bool {
 	// Check Auth header
-	if keyIsCorrect(r.Header.Get("Authorization")) { return true }
+	if keyIsCorrect(r.Header.Get("Authorization")) {
+		return true
+	}
 
 	// Check vetle_key cookie
 	key, err := r.Cookie("vetle_key")
-	if(err == nil && keyIsCorrect(key.Value)) { return true }
+	if err == nil && keyIsCorrect(key.Value) {
+		return true
+	}
 
 	return false
 }
@@ -80,7 +84,10 @@ func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	data := struct{ CarrotAmount int; IsVetle bool }{CarrotAmount: count, IsVetle: isVetle(r)}
+	data := struct {
+		CarrotAmount int
+		IsVetle      bool
+	}{CarrotAmount: count, IsVetle: isVetle(r)}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
@@ -95,7 +102,14 @@ func (h CarrotHandler) HomePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {
-	carrots, err := h.Repository.findCarrots()
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {page = 0}
+	if page < 0 {page = 0}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
+	if err != nil {pageSize = 25}
+	if (pageSize < 1 || pageSize > 200) {pageSize = 200}
+
+	carrots, err := h.Repository.findCarrots(page, pageSize)
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
 		return
