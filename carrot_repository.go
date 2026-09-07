@@ -55,9 +55,13 @@ func (r CarrotRepository) findCarrots(page int, pageSize int, from time.Time, to
 	return carrots, nil
 }
 
-func (r CarrotRepository) countCarrots() (int, error) {
-	query := `SELECT COUNT(*) FROM carrots`
-	row := r.DB.QueryRow(query)
+func (r CarrotRepository) countCarrots(from time.Time, to time.Time) (int, error) {
+	query := `
+		SELECT COUNT(*) FROM carrots
+		WHERE eaten_at >= ?
+		AND eaten_at <= ?
+	`
+	row := r.DB.QueryRow(query, from, to)
 	var count int
 	if err := row.Scan(&count); err != nil {
 		return 0, err
