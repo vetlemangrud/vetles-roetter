@@ -51,10 +51,16 @@ func isVetle(r *http.Request) bool {
 
 func (h CarrotHandler) VetleGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	lastCarrots, err := h.Repository.findCarrots(0, 20, time.Time{}, time.Now())
+	if err != nil {
+		http.Error(w, "Cant read carrots from DBBBB", http.StatusInternalServerError)
+		return
+	}
 
 	data := struct {
-		IsVetle bool
-	}{IsVetle: isVetle(r)}
+		IsVetle     bool
+		LastCarrots []Carrot
+	}{IsVetle: isVetle(r), LastCarrots: lastCarrots}
 	if err := h.VetleTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
@@ -65,6 +71,8 @@ func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
 	switch intent {
 	case "eatCarrot":
 		h.VetlePostCarrot(w, r)
+	case "deleteCarrot":
+		h.VetleDeleteCarrot(w, r)
 	case "login":
 		h.VetlePostLogin(w, r)
 	default:
@@ -78,6 +86,23 @@ func (h CarrotHandler) VetlePostCarrot(w http.ResponseWriter, r *http.Request) {
 	}
 	if _, err := h.Repository.addCarrot(); err != nil {
 		http.Error(w, "Failed to add carrot :(", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/vetle", http.StatusSeeOther)
+}
+func (h CarrotHandler) VetleDeleteCarrot(w http.ResponseWriter, r *http.Request) {
+	if !isVetle(r) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+	}
+	v := r.PostFormValue("id")
+	id, err := strconv.Atoi(v)
+	if err != nil {
+		http.Error(w, "id should be an integer", http.StatusBadRequest);
+		return
+	}
+	
+	if err := h.Repository.deleteCarrot(id); err != nil {
+		http.Error(w, "Failed to delete carrot :(", http.StatusInternalServerError)
 		return
 	}
 	http.Redirect(w, r, "/vetle", http.StatusSeeOther)

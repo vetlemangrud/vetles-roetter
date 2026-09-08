@@ -14,6 +14,21 @@
         <form method="post">
           <button name="intent" value="eatCarrot" type="submit">Spis gulrot</button>
         </form>
+        <h2>Siste Gulrøtter</h2>
+        <form method="post">
+          <input type="hidden" name="intent" value="deleteCarrot" />
+          <table>
+            <tr><th>Tid</th><th>Sletteknappp!!</th></tr>
+            {{range .LastCarrots}}
+              <tr>
+                <td>{{.EatenAt.Local.Format "02.01.2006 15.04"}}</td>
+                <td>
+                  <button type="Submit" name="id" value={{.ID}}>Slett</button>
+                </td>
+              </tr>
+            {{end}}
+          </table>
+        </form>
       {{else}}
         <p>Bevis at du er Vetle!</p>
         <form method="post">

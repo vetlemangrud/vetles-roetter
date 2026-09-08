@@ -79,3 +79,9 @@ func (r CarrotRepository) addCarrot() (Carrot, error) {
 
 	return carrot, nil
 }
+
+func (r CarrotRepository) deleteCarrot(id int) error {
+	query := `DELETE FROM carrots WHERE id LIKE ?`
+	_, err := r.DB.Exec(query, id)
+	return err
+}
