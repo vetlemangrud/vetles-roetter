@@ -6,11 +6,20 @@
     <title>Vetle ONLY</title>
   </head>
   <body>
+    {{if .IsVetle}}
+    <p><a href="/">Tilbake</a></p> 
+    {{end}}
     <h1>Vetle-sone</h1>
-    <p>Bevis at du er Vetle!</p>
-    <form method="post" action="/vetle">
-      <input type="password" name="key" value=""> 
-      <button type="submit">Sjekk</button>
-    </form>
+      {{if .IsVetle}}
+        <form method="post">
+          <button name="intent" value="eatCarrot" type="submit">Spis gulrot</button>
+        </form>
+      {{else}}
+        <p>Bevis at du er Vetle!</p>
+        <form method="post">
+          <input type="password" name="key" value=""> 
+          <button name="intent" value="login" type="submit">Sjekk</button>
+        </form>
+      {{end}}
   </body>
 </html>

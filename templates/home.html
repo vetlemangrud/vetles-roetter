@@ -20,16 +20,14 @@
     </style>
   </head>
   <body>
+    {{if .IsVetle}}
+    <p><a href="/vetle">Admin</a></p> 
+    {{end}}
     <header>
       <h1>Vetles Røtter</h1>
     </header>
     <main>
       <p>Vetle har spist {{.Total}} gulrøtter</p>
-      {{if .IsVetle}}
-        <form method="post" action="/">
-          <button type="Submit">Spis gulrot</button>
-        </form>
-      {{end}}
     </main>
   </body>
 </html>

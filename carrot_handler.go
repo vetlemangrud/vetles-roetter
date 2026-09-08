@@ -52,12 +52,38 @@ func isVetle(r *http.Request) bool {
 func (h CarrotHandler) VetleGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	if err := h.VetleTemplate.Execute(w, nil); err != nil {
+	data := struct {
+		IsVetle bool
+	}{IsVetle: isVetle(r)}
+	if err := h.VetleTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
 }
 
 func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
+	intent := r.PostFormValue("intent")
+	switch intent {
+	case "eatCarrot":
+		h.VetlePostCarrot(w, r)
+	case "login":
+		h.VetlePostLogin(w, r)
+	default:
+		http.Error(w, "unknown intent", http.StatusBadRequest)
+	}
+}
+
+func (h CarrotHandler) VetlePostCarrot(w http.ResponseWriter, r *http.Request) {
+	if !isVetle(r) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+	}
+	if _, err := h.Repository.addCarrot(); err != nil {
+		http.Error(w, "Failed to add carrot :(", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/vetle", http.StatusSeeOther)
+}
+
+func (h CarrotHandler) VetlePostLogin(w http.ResponseWriter, r *http.Request) {
 	key := r.PostFormValue("key")
 	if keyIsCorrect(key) {
 		http.SetCookie(w, &http.Cookie{
@@ -69,16 +95,15 @@ func (h CarrotHandler) VetlePost(w http.ResponseWriter, r *http.Request) {
 			SameSite: http.SameSiteLaxMode,
 			MaxAge:   7 * 24 * 3600,
 		})
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/vetle", http.StatusSeeOther)
 	} else {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-
 }
 
 func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
-	total, err := h.Repository.countCarrots(time.Time{}, time.Now()) 
+	total, err := h.Repository.countCarrots(time.Time{}, time.Now())
 	if err != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
 		println(err.Error())
@@ -87,30 +112,30 @@ func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	data := struct {
-		Total int
-		IsVetle      bool
+		Total   int
+		IsVetle bool
 	}{Total: total, IsVetle: isVetle(r)}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
 }
 
-func (h CarrotHandler) HomePost(w http.ResponseWriter, r *http.Request) {
-	if _, err := h.Repository.addCarrot(); err != nil {
-		http.Error(w, "Failed to add carrot :(", http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
 func (h CarrotHandler) APIGet(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {page = 0}
-	if page < 0 {page = 0}
+	if err != nil {
+		page = 0
+	}
+	if page < 0 {
+		page = 0
+	}
 
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("pageSize"))
-	if err != nil {pageSize = 25}
-	if pageSize < 1 || pageSize > 200 {pageSize = 25}
+	if err != nil {
+		pageSize = 25
+	}
+	if pageSize < 1 || pageSize > 200 {
+		pageSize = 25
+	}
 
 	from := time.Time{}
 	if s := r.URL.Query().Get("from"); s != "" {

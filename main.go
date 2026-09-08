@@ -43,7 +43,6 @@ func main() {
 	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: homeTemplate, VetleTemplate: vetleTemplate}
 
 	http.HandleFunc("GET /{$}", carrotHandler.HomeGet)
-	http.HandleFunc("POST /{$}", requireAuth(carrotHandler.HomePost))
 	http.HandleFunc("GET /vetle", carrotHandler.VetleGet)
 	http.HandleFunc("POST /vetle", carrotHandler.VetlePost)
 	http.HandleFunc("GET /api/", carrotHandler.APIGet)
