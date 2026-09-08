@@ -3,13 +3,18 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
     <title>Vetle ONLY</title>
   </head>
   <body>
     {{if .IsVetle}}
     <p><a href="/">Tilbake</a></p> 
     {{end}}
-    <h1>Vetle-sone</h1>
+    <header>
+      <h1>Vetle-sone</h1>
+    </header>
+    <main>
+      
       {{if .IsVetle}}
         <form method="post">
           <button name="intent" value="eatCarrot" type="submit">Spis gulrot</button>
@@ -36,5 +41,6 @@
           <button name="intent" value="login" type="submit">Sjekk</button>
         </form>
       {{end}}
+    </main>
   </body>
 </html>

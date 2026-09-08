@@ -1,0 +1,21 @@
+:root {
+  font-family: sans-serif;
+  background: #04A777; 
+  color: #291720
+} 
+header, main {
+  text-align: center;
+}
+header {
+  margin-top: 100px
+}
+h1 {
+  font-family: serif
+}
+table {
+  margin: auto;
+  margin-top: 10px;
+}
+model-viewer {
+  margin: auto;
+}

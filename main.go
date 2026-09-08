@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	_ "embed"
+	"embed"
 	"html/template"
 	"log"
 	"net/http"
@@ -11,6 +11,9 @@ import (
 	"github.com/joho/godotenv"
 	_ "modernc.org/sqlite"
 )
+
+//go:embed static
+var staticFS embed.FS
 
 //go:embed templates/home.html
 var homeHTML string
@@ -47,6 +50,7 @@ func main() {
 	http.HandleFunc("POST /vetle", carrotHandler.VetlePost)
 	http.HandleFunc("GET /api/", carrotHandler.APIGet)
 	http.HandleFunc("POST /api/", requireAuth(carrotHandler.APIPost))
+	http.Handle("GET /static/", http.FileServerFS(staticFS))
 
 	log.Println("Listening on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
