@@ -22,7 +22,11 @@
 
     </header>
     <main>
-      <p>Vetle har spist {{.Total}} gulrøtter</p>
+      <p>Vetle har spist {{carrots .Day}} siste døgnet,<br>
+      {{carrots .Week}} siste uka,<br>
+      {{carrots .Month}} siste måneden,<br>
+      {{carrots .Year}} siste året</p>
+      <p id="total">{{carrots .Total}} totalt</p>
     </main>
   </body>
 </html>

@@ -19,3 +19,6 @@ table {
 model-viewer {
   margin: auto;
 }
+#total {
+  font-size: 2em;
+}

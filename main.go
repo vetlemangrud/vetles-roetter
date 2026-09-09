@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -20,6 +21,14 @@ var homeHTML string
 
 //go:embed templates/vetle.html
 var vetleHTML string
+
+
+func carrots(n int) string {
+      if n == 1 {
+              return "1 gulrot"
+      }
+      return fmt.Sprintf("%d gulrøtter", n)
+}
 
 func main() {
 	godotenv.Load()
@@ -41,7 +50,7 @@ func main() {
 		panic(err)
 	}
 
-	homeTemplate := template.Must(template.New("home").Parse(homeHTML))
+	homeTemplate := template.Must(template.New("home").Funcs(template.FuncMap{"carrots":carrots}).Parse(homeHTML))
 	vetleTemplate := template.Must(template.New("vetle").Parse(vetleHTML))
 	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: homeTemplate, VetleTemplate: vetleTemplate}
 

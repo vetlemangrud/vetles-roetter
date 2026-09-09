@@ -97,10 +97,10 @@ func (h CarrotHandler) VetleDeleteCarrot(w http.ResponseWriter, r *http.Request)
 	v := r.PostFormValue("id")
 	id, err := strconv.Atoi(v)
 	if err != nil {
-		http.Error(w, "id should be an integer", http.StatusBadRequest);
+		http.Error(w, "id should be an integer", http.StatusBadRequest)
 		return
 	}
-	
+
 	if err := h.Repository.deleteCarrot(id); err != nil {
 		http.Error(w, "Failed to delete carrot :(", http.StatusInternalServerError)
 		return
@@ -127,19 +127,27 @@ func (h CarrotHandler) VetlePostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+
 func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
-	total, err := h.Repository.countCarrots(time.Time{}, time.Now())
-	if err != nil {
+	total, err0 := h.Repository.countCarrots(time.Time{}, time.Now())
+	year, err1 := h.Repository.countCarrots(time.Now().AddDate(-1, 0, 0), time.Now())
+	month, err2 := h.Repository.countCarrots(time.Now().AddDate(0, -1, 0), time.Now())
+	week, err3 := h.Repository.countCarrots(time.Now().AddDate(0, 0, -7), time.Now())
+	day, err4 := h.Repository.countCarrots(time.Now().AddDate(0, 0, -1), time.Now())
+	if err0 != nil || err1 != nil || err2 != nil || err3 != nil || err4 != nil {
 		http.Error(w, "Failed to get carrots from DB :(", http.StatusInternalServerError)
-		println(err.Error())
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	data := struct {
 		Total   int
+		Year    int
+		Month   int
+		Week    int
+		Day     int
 		IsVetle bool
-	}{Total: total, IsVetle: isVetle(r)}
+	}{Total: total, Year: year, Month: month, Week: week, Day: day, IsVetle: isVetle(r)}
 	if err := h.HomeTemplate.Execute(w, data); err != nil {
 		log.Printf("template: %v", err)
 	}
