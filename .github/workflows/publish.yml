@@ -32,5 +32,5 @@ jobs:
           context: .
           push: true
           tags: |
-            refstek.house/vetles-roetter:latest
-            refstek.house/vetlemangrud/vetles-roetter:${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+            ghcr.io/vetlemangrud/vetles-roetter:latest
+            ghcr.io/vetlemangrud/vetles-roetter:${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
