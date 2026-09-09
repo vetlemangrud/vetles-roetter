@@ -14,7 +14,6 @@ type Carrot struct {
 	EatenAt time.Time `json:"eaten_at"`
 }
 
-
 func (r CarrotRepository) initDatabase() error {
 	createTableSQL := `
 		CREATE TABLE IF NOT EXISTS carrots (

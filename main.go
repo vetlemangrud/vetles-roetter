@@ -22,12 +22,11 @@ var homeHTML string
 //go:embed templates/vetle.html
 var vetleHTML string
 
-
 func carrots(n int) string {
-      if n == 1 {
-              return "1 gulrot"
-      }
-      return fmt.Sprintf("%d gulrøtter", n)
+	if n == 1 {
+		return "1 gulrot"
+	}
+	return fmt.Sprintf("%d gulrøtter", n)
 }
 
 func main() {
@@ -50,7 +49,7 @@ func main() {
 		panic(err)
 	}
 
-	homeTemplate := template.Must(template.New("home").Funcs(template.FuncMap{"carrots":carrots}).Parse(homeHTML))
+	homeTemplate := template.Must(template.New("home").Funcs(template.FuncMap{"carrots": carrots}).Parse(homeHTML))
 	vetleTemplate := template.Must(template.New("vetle").Parse(vetleHTML))
 	carrotHandler := CarrotHandler{Repository: carrotRepository, HomeTemplate: homeTemplate, VetleTemplate: vetleTemplate}
 

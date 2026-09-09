@@ -127,7 +127,6 @@ func (h CarrotHandler) VetlePostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (h CarrotHandler) HomeGet(w http.ResponseWriter, r *http.Request) {
 	total, err0 := h.Repository.countCarrots(time.Time{}, time.Now())
 	year, err1 := h.Repository.countCarrots(time.Now().AddDate(-1, 0, 0), time.Now())
